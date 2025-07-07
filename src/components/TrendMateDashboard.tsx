@@ -6,7 +6,7 @@ import ChatInterface from "./ChatInterface";
 
 const TrendMateDashboard = () => {
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8">
+    <div id="dashboard" className="max-w-7xl mx-auto px-6 py-8">
       <div className="mb-8 text-center">
         <h2 className="text-3xl font-bold mb-2">Your Personal Trend Dashboard</h2>
         <p className="text-muted-foreground">Stay informed with real-time updates from your friendly AI companion</p>

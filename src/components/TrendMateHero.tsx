@@ -1,7 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { Sparkles, TrendingUp } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const TrendMateHero = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
   return (
     <div className="relative overflow-hidden bg-gradient-hero text-white py-20 px-6 text-center">
       <div className="absolute inset-0 opacity-20" style={{
@@ -17,24 +27,29 @@ const TrendMateHero = () => {
           <Sparkles className="w-6 h-6 animate-float" />
         </div>
         
-        <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-          Your lovable AI companion for staying informed! Get real-time trending news, 
-          stock updates, weather, and more — all in one friendly conversation.
+        <p className="text-xl text-white/90 mb-2 max-w-2xl mx-auto">
+          Hey {user?.email?.split('@')[0] || 'friend'}! 👋 
+        </p>
+        <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
+          Ready for your personalized dose of trending news, stocks, weather, and crypto? 
+          Your AI companion is here to make staying informed feel like a warm hug! 💖
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button 
             size="lg" 
             className="bg-white text-primary hover:bg-white/90 transition-smooth shadow-glow"
+            onClick={() => document.getElementById('dashboard')?.scrollIntoView({ behavior: 'smooth' })}
           >
-            Start Exploring Trends
+            Explore My Trends
           </Button>
           <Button 
             size="lg" 
             variant="outline" 
             className="border-white/30 text-white hover:bg-white/10 transition-smooth"
+            onClick={handleSignOut}
           >
-            Sign In for Personalized Feed
+            Sign Out
           </Button>
         </div>
       </div>
