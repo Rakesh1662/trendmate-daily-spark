@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageCircle, Send, Sparkles } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   id: number;
@@ -21,9 +22,10 @@ const ChatInterface = () => {
     }
   ]);
   const [inputText, setInputText] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSendMessage = () => {
-    if (!inputText.trim()) return;
+  const handleSendMessage = async () => {
+    if (!inputText.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: messages.length + 1,
@@ -32,15 +34,37 @@ const ChatInterface = () => {
       timestamp: new Date()
     };
 
-    const botResponse: Message = {
-      id: messages.length + 2,
-      text: "Thanks for your message! In a real app, I'd analyze your request and provide personalized trending info. For now, I'm showing you a preview of what TrendMate can do! 🌟",
-      isUser: false,
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, userMessage, botResponse]);
+    setMessages(prev => [...prev, userMessage]);
     setInputText("");
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('chat-with-ai', {
+        body: { message: inputText }
+      });
+
+      if (error) throw error;
+
+      const botResponse: Message = {
+        id: messages.length + 2,
+        text: data.response,
+        isUser: false,
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, botResponse]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      const errorMessage: Message = {
+        id: messages.length + 2,
+        text: "Sorry, I'm having trouble responding right now. Please try again! 💖",
+        isUser: false,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -77,6 +101,17 @@ const ChatInterface = () => {
               </div>
             </div>
           ))}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="bg-muted text-muted-foreground p-3 rounded-lg text-sm">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Input */}
@@ -87,9 +122,14 @@ const ChatInterface = () => {
             onChange={(e) => setInputText(e.target.value)}
             onKeyPress={handleKeyPress}
             className="flex-1"
+            disabled={isLoading}
           />
-          <Button onClick={handleSendMessage} size="sm" className="px-3">
-            <Send className="w-4 h-4" />
+          <Button onClick={handleSendMessage} size="sm" className="px-3" disabled={isLoading || !inputText.trim()}>
+            {isLoading ? (
+              <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
           </Button>
         </div>
       </CardContent>

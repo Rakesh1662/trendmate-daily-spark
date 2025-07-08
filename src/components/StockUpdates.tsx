@@ -1,17 +1,46 @@
+import { useEffect, useState } from "react";
 import InfoCard from "./InfoCard";
 import { TrendingUp, TrendingDown, DollarSign } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
-const mockStocks = [
-  { symbol: "AAPL", name: "Apple", price: 175.32, change: +2.45, changePercent: +1.42 },
-  { symbol: "TSLA", name: "Tesla", price: 242.18, change: +8.76, changePercent: +3.75 },
-  { symbol: "NVDA", name: "NVIDIA", price: 421.90, change: -5.23, changePercent: -1.22 },
-  { symbol: "MSFT", name: "Microsoft", price: 338.54, change: +1.87, changePercent: +0.56 }
-];
+interface Stock {
+  symbol: string;
+  name: string;
+  price: number;
+  change: number;
+  changePercent: number;
+}
 
 const StockUpdates = () => {
+  const [stocks, setStocks] = useState<Stock[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStocks = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('fetch-stocks');
+        if (error) throw error;
+        setStocks(data.stocks || []);
+      } catch (error) {
+        console.error('Error fetching stocks:', error);
+        setStocks([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStocks();
+  }, []);
+
   const stockContent = (
     <div className="space-y-2">
-      {mockStocks.map((stock, index) => (
+      {loading ? (
+        <div className="text-center py-4">
+          <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-2"></div>
+          <p className="text-xs text-muted-foreground">Loading stock data...</p>
+        </div>
+      ) : stocks.length > 0 ? (
+        stocks.map((stock, index) => (
         <div key={index} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-smooth">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
@@ -36,7 +65,10 @@ const StockUpdates = () => {
             </div>
           </div>
         </div>
-      ))}
+      ))
+      ) : (
+        <p className="text-xs text-muted-foreground text-center py-4">No stock data available</p>
+      )}
     </div>
   );
 

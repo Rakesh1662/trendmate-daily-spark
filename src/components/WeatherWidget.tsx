@@ -1,20 +1,23 @@
+import { useEffect, useState } from "react";
 import InfoCard from "./InfoCard";
 import { Cloud, Sun, CloudRain, Wind, Thermometer } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
-const mockWeather = {
-  location: "San Francisco, CA",
+interface WeatherData {
+  location: string;
   current: {
-    temperature: 72,
-    condition: "Partly Cloudy",
-    humidity: 65,
-    windSpeed: 8
-  },
-  forecast: [
-    { day: "Today", high: 75, low: 62, icon: "cloud" },
-    { day: "Tomorrow", high: 78, low: 65, icon: "sun" },
-    { day: "Friday", high: 71, low: 59, icon: "rain" }
-  ]
-};
+    temperature: number;
+    condition: string;
+    humidity: number;
+    windSpeed: number;
+  };
+  forecast: Array<{
+    day: string;
+    high: number;
+    low: number;
+    icon: string;
+  }>;
+}
 
 const WeatherIcon = ({ type, className = "w-4 h-4" }: { type: string; className?: string }) => {
   switch (type) {
@@ -25,42 +28,95 @@ const WeatherIcon = ({ type, className = "w-4 h-4" }: { type: string; className?
 };
 
 const WeatherWidget = () => {
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchWeather = async () => {
+      try {
+        // Try to get user's location
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              const { latitude, longitude } = position.coords;
+              const { data, error } = await supabase.functions.invoke('fetch-weather', {
+                body: { lat: latitude.toString(), lon: longitude.toString() }
+              });
+              if (error) throw error;
+              setWeather(data.weather);
+              setLoading(false);
+            },
+            async () => {
+              // Fallback to default location
+              const { data, error } = await supabase.functions.invoke('fetch-weather');
+              if (error) throw error;
+              setWeather(data.weather);
+              setLoading(false);
+            }
+          );
+        } else {
+          // Fallback if geolocation not supported
+          const { data, error } = await supabase.functions.invoke('fetch-weather');
+          if (error) throw error;
+          setWeather(data.weather);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error fetching weather:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchWeather();
+  }, []);
+
   const weatherContent = (
     <div className="space-y-4">
-      {/* Current Weather */}
-      <div className="text-center p-4 bg-gradient-card rounded-lg">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <Cloud className="w-6 h-6 text-primary" />
-          <span className="text-2xl font-bold">{mockWeather.current.temperature}°F</span>
+      {loading ? (
+        <div className="text-center py-4">
+          <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-2"></div>
+          <p className="text-xs text-muted-foreground">Loading weather...</p>
         </div>
-        <p className="text-sm text-muted-foreground mb-2">{mockWeather.current.condition}</p>
-        <p className="text-xs font-medium">{mockWeather.location}</p>
-      </div>
+      ) : weather ? (
+        <>
+          {/* Current Weather */}
+          <div className="text-center p-4 bg-gradient-card rounded-lg">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Cloud className="w-6 h-6 text-primary" />
+              <span className="text-2xl font-bold">{weather.current.temperature}°F</span>
+            </div>
+            <p className="text-sm text-muted-foreground mb-2">{weather.current.condition}</p>
+            <p className="text-xs font-medium">{weather.location}</p>
+          </div>
 
-      {/* Weather Details */}
-      <div className="grid grid-cols-2 gap-2 text-xs">
-        <div className="flex items-center gap-2">
-          <Thermometer className="w-3 h-3 text-muted-foreground" />
-          <span>Humidity: {mockWeather.current.humidity}%</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Wind className="w-3 h-3 text-muted-foreground" />
-          <span>Wind: {mockWeather.current.windSpeed} mph</span>
-        </div>
-      </div>
+          {/* Weather Details */}
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="flex items-center gap-2">
+              <Thermometer className="w-3 h-3 text-muted-foreground" />
+              <span>Humidity: {weather.current.humidity}%</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Wind className="w-3 h-3 text-muted-foreground" />
+              <span>Wind: {weather.current.windSpeed} mph</span>
+            </div>
+          </div>
 
-      {/* Forecast */}
-      <div className="space-y-2">
-        {mockWeather.forecast.map((day, index) => (
+          {/* Forecast */}
+          <div className="space-y-2">
+            {weather.forecast.map((day, index) => (
           <div key={index} className="flex items-center justify-between text-sm">
             <span className="font-medium">{day.day}</span>
             <div className="flex items-center gap-2">
               <WeatherIcon type={day.icon} />
               <span className="text-muted-foreground">{day.high}°/{day.low}°</span>
             </div>
-          </div>
-        ))}
-      </div>
+            </div>
+          ))}
+        </div>
+        </>
+      ) : (
+        <p className="text-xs text-muted-foreground text-center py-4">Weather data unavailable</p>
+      )}
     </div>
   );
 
