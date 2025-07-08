@@ -11,52 +11,117 @@ serve(async (req) => {
   }
 
   try {
-    // Using CoinGecko free API as it's more reliable than Gemini for price data
-    const response = await fetch(
-      'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,cardano,solana&vs_currencies=usd&include_24hr_change=true'
+    const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY')!
+    
+    // Using Gemini Exchange API for live crypto prices
+    const symbols = ['BTCUSD', 'ETHUSD', 'ADAUSD', 'SOLUSD']
+    
+    const cryptoData = await Promise.all(
+      symbols.map(async (symbol) => {
+        try {
+          const response = await fetch(
+            `https://api.gemini.com/v1/pubticker/${symbol}`,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'X-GEMINI-APIKEY': GEMINI_API_KEY
+              }
+            }
+          )
+          
+          if (!response.ok) {
+            console.log(`Failed to fetch ${symbol}: ${response.status}`)
+            return null
+          }
+          
+          const data = await response.json()
+          
+          const symbolMap: { [key: string]: { symbol: string, name: string } } = {
+            'BTCUSD': { symbol: 'BTC', name: 'Bitcoin' },
+            'ETHUSD': { symbol: 'ETH', name: 'Ethereum' },
+            'ADAUSD': { symbol: 'ADA', name: 'Cardano' },
+            'SOLUSD': { symbol: 'SOL', name: 'Solana' }
+          }
+          
+          const price = parseFloat(data.last)
+          const change = parseFloat(data.change)
+          const changePercent = (change / (price - change)) * 100
+          
+          return {
+            symbol: symbolMap[symbol].symbol,
+            name: symbolMap[symbol].name,
+            price: price,
+            change: change.toFixed(2),
+            changePercent: changePercent.toFixed(2)
+          }
+        } catch (error) {
+          console.error(`Error fetching ${symbol}:`, error)
+          return null
+        }
+      })
     )
+
+    // Filter out null values and ensure we have data
+    const validData = cryptoData.filter(item => item !== null)
     
-    const data = await response.json()
-    
-    const cryptoData = [
-      {
-        symbol: 'BTC',
-        name: 'Bitcoin',
-        price: data.bitcoin?.usd || 0,
-        change: (data.bitcoin?.usd_24h_change || 0).toFixed(2),
-        changePercent: (data.bitcoin?.usd_24h_change || 0).toFixed(2)
-      },
-      {
-        symbol: 'ETH', 
-        name: 'Ethereum',
-        price: data.ethereum?.usd || 0,
-        change: (data.ethereum?.usd_24h_change || 0).toFixed(2),
-        changePercent: (data.ethereum?.usd_24h_change || 0).toFixed(2)
-      },
-      {
-        symbol: 'ADA',
-        name: 'Cardano', 
-        price: data.cardano?.usd || 0,
-        change: (data.cardano?.usd_24h_change || 0).toFixed(2),
-        changePercent: (data.cardano?.usd_24h_change || 0).toFixed(2)
-      },
-      {
-        symbol: 'SOL',
-        name: 'Solana',
-        price: data.solana?.usd || 0,
-        change: (data.solana?.usd_24h_change || 0).toFixed(2),
-        changePercent: (data.solana?.usd_24h_change || 0).toFixed(2)
-      }
-    ]
+    // Fallback to CoinGecko if Gemini fails
+    if (validData.length === 0) {
+      console.log('Gemini failed, falling back to CoinGecko')
+      const fallbackResponse = await fetch(
+        'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,cardano,solana&vs_currencies=usd&include_24hr_change=true'
+      )
+      
+      const fallbackData = await fallbackResponse.json()
+      
+      const fallbackCrypto = [
+        {
+          symbol: 'BTC',
+          name: 'Bitcoin',
+          price: fallbackData.bitcoin?.usd || 0,
+          change: (fallbackData.bitcoin?.usd_24h_change || 0).toFixed(2),
+          changePercent: (fallbackData.bitcoin?.usd_24h_change || 0).toFixed(2)
+        },
+        {
+          symbol: 'ETH', 
+          name: 'Ethereum',
+          price: fallbackData.ethereum?.usd || 0,
+          change: (fallbackData.ethereum?.usd_24h_change || 0).toFixed(2),
+          changePercent: (fallbackData.ethereum?.usd_24h_change || 0).toFixed(2)
+        },
+        {
+          symbol: 'ADA',
+          name: 'Cardano', 
+          price: fallbackData.cardano?.usd || 0,
+          change: (fallbackData.cardano?.usd_24h_change || 0).toFixed(2),
+          changePercent: (fallbackData.cardano?.usd_24h_change || 0).toFixed(2)
+        },
+        {
+          symbol: 'SOL',
+          name: 'Solana',
+          price: fallbackData.solana?.usd || 0,
+          change: (fallbackData.solana?.usd_24h_change || 0).toFixed(2),
+          changePercent: (fallbackData.solana?.usd_24h_change || 0).toFixed(2)
+        }
+      ]
+      
+      return new Response(
+        JSON.stringify({ crypto: fallbackCrypto }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      )
+    }
 
     return new Response(
-      JSON.stringify({ crypto: cryptoData }),
+      JSON.stringify({ crypto: validData }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
       }
     )
   } catch (error) {
+    console.error('Crypto API Error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
