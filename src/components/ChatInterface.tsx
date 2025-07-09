@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageCircle, Send, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: number;
@@ -13,6 +15,8 @@ interface Message {
 }
 
 const ChatInterface = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
@@ -23,6 +27,50 @@ const ChatInterface = () => {
   ]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+
+  // Load chat history on component mount
+  useEffect(() => {
+    if (user) {
+      loadChatHistory();
+    }
+  }, [user]);
+
+  const loadChatHistory = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('get-chat-history', {
+        body: { userId: user.id }
+      });
+
+      if (error) throw error;
+
+      if (data.history && data.history.length > 0) {
+        const historyMessages: Message[] = data.history
+          .reverse() // Show oldest first
+          .map((item: any, index: number) => [
+            {
+              id: index * 2 + 1000,
+              text: item.message,
+              isUser: true,
+              timestamp: new Date(item.created_at)
+            },
+            {
+              id: index * 2 + 1001,
+              text: item.response,
+              isUser: false,
+              timestamp: new Date(item.created_at)
+            }
+          ])
+          .flat();
+
+        setMessages(prev => [...historyMessages, ...prev]);
+      }
+    } catch (error) {
+      console.error('Error loading chat history:', error);
+    }
+  };
 
   const handleSendMessage = async () => {
     if (!inputText.trim() || isLoading) return;
@@ -35,12 +83,16 @@ const ChatInterface = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const messageToSend = inputText;
     setInputText("");
     setIsLoading(true);
 
     try {
       const { data, error } = await supabase.functions.invoke('chat-with-ai', {
-        body: { message: inputText }
+        body: { 
+          message: messageToSend,
+          userId: user?.id || null
+        }
       });
 
       if (error) throw error;
@@ -57,11 +109,17 @@ const ChatInterface = () => {
       console.error('Error sending message:', error);
       const errorMessage: Message = {
         id: messages.length + 2,
-        text: "Sorry, I'm having trouble responding right now. Please try again! 💖",
+        text: "I'm having a tiny moment of confusion, but I'm still here for you! 💖 Try asking me about the latest trends - I love sharing what's happening in the world!",
         isUser: false,
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
+      
+      toast({
+        title: "Connection Issue",
+        description: "I'm having trouble responding right now, but I'm still here for you!",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -80,9 +138,24 @@ const ChatInterface = () => {
           <MessageCircle className="w-5 h-5 text-primary" />
           Chat with TrendMate
           <Sparkles className="w-4 h-4 text-accent animate-pulse" />
+          <div className="ml-auto">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowHistory(!showHistory)}
+              className="text-xs"
+            >
+              💾 {showHistory ? 'Hide' : 'Show'} History
+            </Button>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col gap-3">
+        {showHistory && (
+          <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded-lg">
+            💾 Chat history is saved automatically. {messages.length > 1 ? `You have ${messages.length} messages in this session.` : 'Start chatting to build your history!'}
+          </div>
+        )}
         {/* Messages */}
         <div className="flex-1 overflow-y-auto space-y-3 max-h-64">
           {messages.map((message) => (

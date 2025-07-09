@@ -40,14 +40,14 @@ const WeatherWidget = () => {
             async (position) => {
               const { latitude, longitude } = position.coords;
               const { data, error } = await supabase.functions.invoke('fetch-weather', {
-                body: { lat: latitude.toString(), lon: longitude.toString() }
+                body: JSON.stringify({ lat: latitude.toString(), lon: longitude.toString() })
               });
               if (error) throw error;
               setWeather(data.weather);
               setLoading(false);
             },
             async () => {
-              // Fallback to default location
+              // Fallback to default location (San Francisco)
               const { data, error } = await supabase.functions.invoke('fetch-weather');
               if (error) throw error;
               setWeather(data.weather);
