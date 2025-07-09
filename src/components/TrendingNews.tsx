@@ -64,7 +64,7 @@ const TrendingNews = () => {
       badge={{ text: "Live", variant: "default" }}
       action={{
         text: "View All News",
-        onClick: () => console.log("View all news")
+        onClick: () => window.open('https://news.google.com', '_blank')
       }}
     />
   );

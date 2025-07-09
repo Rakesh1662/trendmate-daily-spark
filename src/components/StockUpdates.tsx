@@ -80,7 +80,7 @@ const StockUpdates = () => {
       badge={{ text: "Real-time", variant: "secondary" }}
       action={{
         text: "View Portfolio",
-        onClick: () => console.log("View portfolio")
+        onClick: () => window.open('https://finance.yahoo.com/portfolios', '_blank')
       }}
     />
   );

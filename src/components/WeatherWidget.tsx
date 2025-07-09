@@ -34,27 +34,35 @@ const WeatherWidget = () => {
   useEffect(() => {
     const fetchWeather = async () => {
       try {
-        // Try to get user's location
+        // Try to get user's location with better options
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             async (position) => {
               const { latitude, longitude } = position.coords;
+              console.log('Got user location:', latitude, longitude);
               const { data, error } = await supabase.functions.invoke('fetch-weather', {
-                body: JSON.stringify({ lat: latitude.toString(), lon: longitude.toString() })
+                body: { lat: latitude.toString(), lon: longitude.toString() }
               });
               if (error) throw error;
               setWeather(data.weather);
               setLoading(false);
             },
-            async () => {
+            async (error) => {
+              console.log('Geolocation error:', error.message);
               // Fallback to default location (San Francisco)
-              const { data, error } = await supabase.functions.invoke('fetch-weather');
-              if (error) throw error;
+              const { data, error: fetchError } = await supabase.functions.invoke('fetch-weather');
+              if (fetchError) throw fetchError;
               setWeather(data.weather);
               setLoading(false);
+            },
+            {
+              enableHighAccuracy: true,
+              timeout: 10000,
+              maximumAge: 300000 // 5 minutes
             }
           );
         } else {
+          console.log('Geolocation not supported');
           // Fallback if geolocation not supported
           const { data, error } = await supabase.functions.invoke('fetch-weather');
           if (error) throw error;
@@ -128,7 +136,7 @@ const WeatherWidget = () => {
       badge={{ text: "Updated", variant: "outline" }}
       action={{
         text: "7-Day Forecast",
-        onClick: () => console.log("View 7-day forecast")
+        onClick: () => window.open('https://weather.com', '_blank')
       }}
     />
   );

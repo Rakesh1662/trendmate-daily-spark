@@ -46,10 +46,10 @@ const TrendMateHero = () => {
           <Button 
             size="lg" 
             variant="outline" 
-            className="border-white/30 text-white hover:bg-white/10 transition-smooth"
+            className="group border-white/30 text-white hover:bg-gradient-to-r hover:from-red-500/20 hover:to-pink-500/20 hover:border-red-300 transition-all duration-300 transform hover:scale-105 hover:shadow-glow animate-fade-in"
             onClick={handleSignOut}
           >
-            Sign Out
+            <span className="group-hover:animate-pulse">✨ Sign Out</span>
           </Button>
         </div>
       </div>

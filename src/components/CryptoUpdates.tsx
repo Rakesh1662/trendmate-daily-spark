@@ -61,7 +61,7 @@ const CryptoUpdates = () => {
               ) : (
                 <TrendingDown className="w-3 h-3" />
               )}
-              <span>{parseFloat(crypto.change) >= 0 ? '+' : ''}{crypto.change}% ({parseFloat(crypto.changePercent) >= 0 ? '+' : ''}{crypto.changePercent}%)</span>
+              <span>{parseFloat(crypto.changePercent) >= 0 ? '+' : ''}{crypto.changePercent}%</span>
             </div>
           </div>
         </div>
@@ -80,7 +80,7 @@ const CryptoUpdates = () => {
       badge={{ text: "Live", variant: "default" }}
       action={{
         text: "View Gemini Rates",
-        onClick: () => console.log("View Gemini rates")
+        onClick: () => window.open('https://www.gemini.com/prices', '_blank')
       }}
     />
   );
