@@ -116,9 +116,11 @@ const EnhancedCryptoWidget = () => {
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold">${cryptoData.price.toLocaleString()}</span>
-                <div className={`text-sm ${parseFloat(cryptoData.changePercent) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  {parseFloat(cryptoData.changePercent) >= 0 ? '+' : ''}{cryptoData.changePercent}%
+                <span className="text-2xl font-bold">
+                  ${cryptoData.price?.toLocaleString() || '0'}
+                </span>
+                <div className={`text-sm ${parseFloat(cryptoData.changePercent || '0') >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  {parseFloat(cryptoData.changePercent || '0') >= 0 ? '+' : ''}{cryptoData.changePercent || '0'}%
                 </div>
               </div>
             </div>
@@ -127,11 +129,11 @@ const EnhancedCryptoWidget = () => {
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-muted/30 p-2 rounded text-center">
                 <p className="text-xs text-muted-foreground">24h High</p>
-                <p className="font-semibold text-sm">${cryptoData.dayHigh.toLocaleString()}</p>
+                <p className="font-semibold text-sm">${cryptoData.dayHigh?.toLocaleString() || '0'}</p>
               </div>
               <div className="bg-muted/30 p-2 rounded text-center">
                 <p className="text-xs text-muted-foreground">24h Low</p>
-                <p className="font-semibold text-sm">${cryptoData.dayLow.toLocaleString()}</p>
+                <p className="font-semibold text-sm">${cryptoData.dayLow?.toLocaleString() || '0'}</p>
               </div>
             </div>
 
@@ -139,17 +141,17 @@ const EnhancedCryptoWidget = () => {
             <div className="bg-muted/50 p-3 rounded-lg space-y-2">
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Volatility:</span>
-                <span className={`font-medium ${cryptoData.volatility > 5 ? 'text-red-500' : 'text-green-500'}`}>
-                  {cryptoData.volatility}%
+                <span className={`font-medium ${(cryptoData.volatility || 0) > 5 ? 'text-red-500' : 'text-green-500'}`}>
+                  {cryptoData.volatility || 0}%
                 </span>
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Support:</span>
-                <span>${cryptoData.support.toLocaleString()}</span>
+                <span>${cryptoData.support?.toLocaleString() || '0'}</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Resistance:</span>
-                <span>${cryptoData.resistance.toLocaleString()}</span>
+                <span>${cryptoData.resistance?.toLocaleString() || '0'}</span>
               </div>
             </div>
 
@@ -159,7 +161,9 @@ const EnhancedCryptoWidget = () => {
                 <Target className="w-4 h-4 text-primary" />
                 <span className="text-sm font-medium">AI Market Sentiment</span>
               </div>
-              <p className="text-xs text-muted-foreground">{cryptoData.aiSentiment}</p>
+              <p className="text-xs text-muted-foreground">
+                {cryptoData.aiSentiment || "Market analysis unavailable"}
+              </p>
             </div>
 
             <Button 

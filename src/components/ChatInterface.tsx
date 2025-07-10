@@ -76,7 +76,7 @@ const ChatInterface = () => {
     if (!inputText.trim() || isLoading) return;
 
     const userMessage: Message = {
-      id: messages.length + 1,
+      id: Date.now(), // Use timestamp for unique ID
       text: inputText,
       isUser: true,
       timestamp: new Date()
@@ -98,7 +98,7 @@ const ChatInterface = () => {
       if (error) throw error;
 
       const botResponse: Message = {
-        id: messages.length + 2,
+        id: Date.now() + 1, // Use timestamp + 1 for unique ID
         text: data.response,
         isUser: false,
         timestamp: new Date()
@@ -108,7 +108,7 @@ const ChatInterface = () => {
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage: Message = {
-        id: messages.length + 2,
+        id: Date.now(), // Use timestamp for unique ID
         text: "I'm having a tiny moment of confusion, but I'm still here for you! 💖 Try asking me about the latest trends - I love sharing what's happening in the world!",
         isUser: false,
         timestamp: new Date()

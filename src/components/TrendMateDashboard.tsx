@@ -5,6 +5,7 @@ import CryptoUpdates from "./CryptoUpdates";
 import ChatInterface from "./ChatInterface";
 import EnhancedCryptoWidget from "./EnhancedCryptoWidget";
 import SentimentAnalysis from "./SentimentAnalysis";
+import { ErrorBoundary, ErrorFallback } from "./ui/error-boundary";
 
 const TrendMateDashboard = () => {
   return (
@@ -20,10 +21,16 @@ const TrendMateDashboard = () => {
         <div className="lg:col-span-2 space-y-6">
           <TrendingNews />
           <div className="grid md:grid-cols-2 gap-6">
-            <EnhancedCryptoWidget />
-            <SentimentAnalysis />
+            <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => window.location.reload()}>
+              <EnhancedCryptoWidget />
+            </ErrorBoundary>
+            <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => window.location.reload()}>
+              <SentimentAnalysis />
+            </ErrorBoundary>
           </div>
-          <ChatInterface />
+          <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => window.location.reload()}>
+            <ChatInterface />
+          </ErrorBoundary>
         </div>
 
         {/* Sidebar - Market Updates and Weather */}

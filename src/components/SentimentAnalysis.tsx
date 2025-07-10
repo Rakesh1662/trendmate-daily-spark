@@ -31,11 +31,17 @@ const SentimentAnalysis = () => {
   }, []);
 
   const analyzeSentiment = async (text: string) => {
-    if (!pipeline) return null;
+    if (!pipeline || !text || text.trim() === '') {
+      console.log('Pipeline not ready or empty text');
+      return null;
+    }
     
     try {
       setLoading(true);
+      console.log('Analyzing sentiment for:', text);
+      
       const result = await pipeline(text);
+      console.log('Sentiment result:', result);
       
       // Enhanced sentiment with emotion detection
       const { pipeline: createEmotionPipeline } = await import('@huggingface/transformers');
@@ -45,6 +51,7 @@ const SentimentAnalysis = () => {
       );
       
       const emotions = await emotionPipeline(text);
+      console.log('Emotion result:', emotions);
       
       setSentiment({
         sentiment: result[0],
@@ -55,6 +62,11 @@ const SentimentAnalysis = () => {
       return { sentiment: result[0], emotions };
     } catch (error) {
       console.error('Sentiment analysis error:', error);
+      setSentiment({
+        sentiment: { label: 'neutral', score: 0.5 },
+        emotions: [{ label: 'neutral', score: 1.0 }],
+        timestamp: new Date().toISOString()
+      });
       return null;
     } finally {
       setLoading(false);
@@ -91,6 +103,7 @@ const SentimentAnalysis = () => {
     ];
     
     const randomText = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
+    console.log('Testing sentiment with:', randomText);
     analyzeSentiment(randomText);
   };
 
