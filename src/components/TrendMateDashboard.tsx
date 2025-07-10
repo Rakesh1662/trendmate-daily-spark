@@ -3,6 +3,8 @@ import StockUpdates from "./StockUpdates";
 import WeatherWidget from "./WeatherWidget";
 import CryptoUpdates from "./CryptoUpdates";
 import ChatInterface from "./ChatInterface";
+import EnhancedCryptoWidget from "./EnhancedCryptoWidget";
+import SentimentAnalysis from "./SentimentAnalysis";
 
 const TrendMateDashboard = () => {
   return (
@@ -12,17 +14,24 @@ const TrendMateDashboard = () => {
         <p className="text-muted-foreground">Stay informed with real-time updates from your friendly AI companion</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Enhanced Layout with AI Features */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Main Content Area - News and Chat */}
         <div className="lg:col-span-2 space-y-6">
           <TrendingNews />
+          <div className="grid md:grid-cols-2 gap-6">
+            <EnhancedCryptoWidget />
+            <SentimentAnalysis />
+          </div>
           <ChatInterface />
         </div>
 
         {/* Sidebar - Market Updates and Weather */}
-        <div className="space-y-6">
-          <WeatherWidget />
-          <StockUpdates />
+        <div className="lg:col-span-2 space-y-6">
+          <div className="grid md:grid-cols-2 gap-6">
+            <WeatherWidget />
+            <StockUpdates />
+          </div>
           <CryptoUpdates />
         </div>
       </div>
