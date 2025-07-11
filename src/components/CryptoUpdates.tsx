@@ -61,7 +61,7 @@ const CryptoUpdates = () => {
               ) : (
                 <TrendingDown className="w-3 h-3" />
               )}
-              <span>{parseFloat(crypto.changePercent) >= 0 ? '+' : ''}{crypto.changePercent}%</span>
+              <span>{crypto.changePercent && !isNaN(parseFloat(crypto.changePercent)) ? (parseFloat(crypto.changePercent) >= 0 ? '+' : '') + crypto.changePercent + '%' : '0.00%'}</span>
             </div>
           </div>
         </div>

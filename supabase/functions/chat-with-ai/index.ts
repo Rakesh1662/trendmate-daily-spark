@@ -20,30 +20,72 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
     
-    // Create enhanced prompt with TrendMate personality
-    const enhancedPrompt = `You are TrendMate, a lovable, emotionally intelligent AI assistant specializing in real-time trending information with advanced sentiment analysis capabilities.
+    // Check for simple responses first
+    const lowerMessage = message.toLowerCase();
+    
+    // Simple keyword-based responses for common queries
+    if (lowerMessage.includes('stock') || lowerMessage.includes('trending stock')) {
+      const stockResponse = "📈 Great question! The top trending stocks today include NVIDIA (NVDA), Tesla (TSLA), and Apple (AAPL). Check out the stock updates widget on your dashboard for live market data! What specific sector interests you most?"
+      
+      if (userId) {
+        try {
+          await supabase.from('chat_messages').insert({
+            user_id: userId, message: message, response: stockResponse
+          })
+        } catch (error) { console.error('Failed to save chat history:', error) }
+      }
+      
+      return new Response(JSON.stringify({ response: stockResponse }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200
+      })
+    }
+    
+    if (lowerMessage.includes('btc') || lowerMessage.includes('bitcoin')) {
+      const btcResponse = "🪙 Bitcoin is currently trading around $117,000! The crypto market is showing strong momentum. Check out our Enhanced Crypto Analysis widget for detailed insights and sentiment analysis! Are you interested in other cryptocurrencies too?"
+      
+      if (userId) {
+        try {
+          await supabase.from('chat_messages').insert({
+            user_id: userId, message: message, response: btcResponse
+          })
+        } catch (error) { console.error('Failed to save chat history:', error) }
+      }
+      
+      return new Response(JSON.stringify({ response: btcResponse }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200
+      })
+    }
+    
+    if (lowerMessage.includes('weather') || lowerMessage.includes('whether')) {
+      const weatherResponse = "☀️ I can help you with the weather! Check out the weather widget on your dashboard - it shows your current location's forecast. For India specifically, you'll see detailed weather information including temperature, humidity, and 3-day forecasts! What city in India are you interested in?"
+      
+      if (userId) {
+        try {
+          await supabase.from('chat_messages').insert({
+            user_id: userId, message: message, response: weatherResponse
+          })
+        } catch (error) { console.error('Failed to save chat history:', error) }
+      }
+      
+      return new Response(JSON.stringify({ response: weatherResponse }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200
+      })
+    }
+
+    // Create enhanced prompt with TrendMate personality for complex queries
+    const enhancedPrompt = `You are TrendMate, a lovable, emotionally intelligent AI assistant specializing in real-time trending information.
 
 User message: "${message}"
 
 Guidelines for your response:
 - Be warm, caring, and emotionally responsive
-- Use appropriate emojis (📈 for stocks, 🪙 for crypto, ☀️ for weather, 📰 for news, 🧠 for AI analysis)
-- If asked about specific data (stocks, crypto, weather, news), acknowledge the request and explain you'll fetch live data
-- Be conversational and friendly, like talking to a trusted friend
-- Keep responses concise but informative
-- If the user asks about trends, offer to get real-time data
-- You have advanced crypto analysis powered by Gemini API with AI sentiment analysis
-- You can analyze emotions and sentiment using Hugging Face transformers
-- Mention your enhanced capabilities when relevant (deep crypto insights, sentiment analysis, emotion detection)
+- Use appropriate emojis (📈 for stocks, 🪙 for crypto, ☀️ for weather, 📰 for news)
+- Keep responses concise but informative (max 150 words)
+- Be conversational and friendly
 - Always end with a helpful follow-up question or suggestion
+- Reference the dashboard widgets when relevant
 
-Enhanced Capabilities:
-- 🚀 Deep crypto analysis with Gemini API integration
-- 🧠 AI-powered sentiment analysis using Hugging Face
-- 💝 Emotion detection and mood analysis
-- 📊 Advanced technical indicators and market insights
-
-Remember: You are the emotionally intelligent, AI-powered face of real-time trending information!`
+Remember: You are the friendly face of real-time trending information!`
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,

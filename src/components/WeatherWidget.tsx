@@ -49,8 +49,10 @@ const WeatherWidget = () => {
             },
             async (error) => {
               console.log('Geolocation error:', error.message);
-              // Fallback to default location (San Francisco)
-              const { data, error: fetchError } = await supabase.functions.invoke('fetch-weather');
+              // Fallback to India coordinates (New Delhi)
+              const { data, error: fetchError } = await supabase.functions.invoke('fetch-weather', {
+                body: { lat: '28.6139', lon: '77.2090' }
+              });
               if (fetchError) throw fetchError;
               setWeather(data.weather);
               setLoading(false);
@@ -63,8 +65,10 @@ const WeatherWidget = () => {
           );
         } else {
           console.log('Geolocation not supported');
-          // Fallback if geolocation not supported
-          const { data, error } = await supabase.functions.invoke('fetch-weather');
+          // Fallback to India if geolocation not supported
+          const { data, error } = await supabase.functions.invoke('fetch-weather', {
+            body: { lat: '28.6139', lon: '77.2090' }
+          });
           if (error) throw error;
           setWeather(data.weather);
           setLoading(false);
