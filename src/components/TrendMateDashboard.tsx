@@ -15,17 +15,21 @@ const TrendMateDashboard = () => {
         <p className="text-muted-foreground">Stay informed with real-time updates from your friendly AI companion</p>
       </div>
 
-      {/* Enhanced Layout with AI Features */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Enhanced Layout with Better Sizing */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Main Content Area - News and Chat */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-8 space-y-6">
           <TrendingNews />
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-4">
             <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => window.location.reload()}>
-              <EnhancedCryptoWidget />
+              <div className="h-fit">
+                <EnhancedCryptoWidget />
+              </div>
             </ErrorBoundary>
             <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => window.location.reload()}>
-              <SentimentAnalysis />
+              <div className="h-fit">
+                <SentimentAnalysis />
+              </div>
             </ErrorBoundary>
           </div>
           <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => window.location.reload()}>
@@ -34,11 +38,9 @@ const TrendMateDashboard = () => {
         </div>
 
         {/* Sidebar - Market Updates and Weather */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="grid md:grid-cols-2 gap-6">
-            <WeatherWidget />
-            <StockUpdates />
-          </div>
+        <div className="lg:col-span-4 space-y-6">
+          <WeatherWidget />
+          <StockUpdates />
           <CryptoUpdates />
         </div>
       </div>

@@ -14,6 +14,7 @@ interface InfoCardProps {
   action?: {
     text: string;
     onClick: () => void;
+    customAction?: React.ReactNode;
   };
   className?: string;
 }
@@ -36,14 +37,16 @@ const InfoCard = ({ title, icon: Icon, content, badge, action, className = "" }:
         <div className="space-y-3">
           {content}
           {action && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={action.onClick}
-              className="w-full transition-bounce hover:bg-primary hover:text-primary-foreground"
-            >
-              {action.text}
-            </Button>
+            action.customAction || (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={action.onClick}
+                className="w-full transition-bounce hover:bg-primary hover:text-primary-foreground"
+              >
+                {action.text}
+              </Button>
+            )
           )}
         </div>
       </CardContent>

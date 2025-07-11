@@ -88,18 +88,25 @@ const ChatInterface = () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('chat-with-ai', {
-        body: { 
-          message: messageToSend,
-          userId: user?.id || null
-        }
-      });
-
-      if (error) throw error;
+      // Simple fallback responses for now
+      let response = "I'm having a tiny moment of confusion, but I'm still here for you! 💖 Try asking me about the latest trends - I love sharing what's happening in the world!";
+      
+      const message = messageToSend.toLowerCase();
+      if (message.includes('weather') || message.includes('temperature')) {
+        response = "Check out the weather widget on the right side of your dashboard! It shows your local weather and forecast. 🌤️";
+      } else if (message.includes('news') || message.includes('trending')) {
+        response = "Great question! Check out the trending news section at the top of your dashboard for the latest updates! 📰";
+      } else if (message.includes('crypto') || message.includes('bitcoin')) {
+        response = "Looking for crypto info? Check out the crypto analysis widgets on your dashboard - they show real-time market data! 📈";
+      } else if (message.includes('stock') || message.includes('market')) {
+        response = "For stock updates, take a look at the stock widget on your dashboard - it has the latest market information! 📊";
+      } else if (message.includes('hello') || message.includes('hi') || message.includes('hey')) {
+        response = "Hey there! 👋 I'm so happy to chat with you! What would you like to explore on your dashboard today?";
+      }
 
       const botResponse: Message = {
-        id: Date.now() + 1, // Use timestamp + 1 for unique ID
-        text: data.response,
+        id: Date.now() + 1,
+        text: response,
         isUser: false,
         timestamp: new Date()
       };
@@ -108,7 +115,7 @@ const ChatInterface = () => {
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage: Message = {
-        id: Date.now(), // Use timestamp for unique ID
+        id: Date.now(),
         text: "I'm having a tiny moment of confusion, but I'm still here for you! 💖 Try asking me about the latest trends - I love sharing what's happening in the world!",
         isUser: false,
         timestamp: new Date()

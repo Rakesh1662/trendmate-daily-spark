@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import InfoCard from "./InfoCard";
+import NewsModal from "./NewsModal";
 import { Newspaper } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 interface NewsArticle {
@@ -64,7 +66,14 @@ const TrendingNews = () => {
       badge={{ text: "Live", variant: "default" }}
       action={{
         text: "View All News",
-        onClick: () => window.open('https://news.google.com', '_blank')
+        onClick: () => {}, // Will be handled by NewsModal
+        customAction: (
+          <NewsModal trigger={
+            <Button variant="ghost" size="sm" className="text-xs">
+              View All News
+            </Button>
+          } />
+        )
       }}
     />
   );
