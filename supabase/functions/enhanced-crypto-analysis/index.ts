@@ -37,14 +37,14 @@ serve(async (req) => {
     ])
 
     // Calculate advanced metrics
-    const currentPrice = parseFloat(tickerData.last)
-    const dayHigh = parseFloat(tickerData.high)
-    const dayLow = parseFloat(tickerData.low)
-    const volume = parseFloat(tickerData.volume[cryptoSymbol.slice(0, 3)])
-    const volumeUSD = parseFloat(tickerData.volume.USD)
+    const currentPrice = parseFloat(tickerData.last) || 0
+    const dayHigh = parseFloat(tickerData.high) || currentPrice
+    const dayLow = parseFloat(tickerData.low) || currentPrice
+    const volume = parseFloat(tickerData.volume?.[cryptoSymbol.slice(0, 3)]) || 0
+    const volumeUSD = parseFloat(tickerData.volume?.USD) || 0
     
-    // Calculate volatility
-    const volatility = ((dayHigh - dayLow) / currentPrice * 100).toFixed(2)
+    // Calculate volatility safely
+    const volatility = currentPrice > 0 ? ((dayHigh - dayLow) / currentPrice * 100).toFixed(2) : "0.00"
     
     // Calculate market momentum based on recent trades
     const recentTrades = tradesData.slice(0, 5)
@@ -85,7 +85,9 @@ serve(async (req) => {
             cryptoSymbol.slice(0, 3) === 'ADA' ? 'Cardano' : 'Solana',
       price: currentPrice,
       change: parseFloat(tickerData.change),
-      changePercent: ((parseFloat(tickerData.change) / (currentPrice - parseFloat(tickerData.change))) * 100).toFixed(2),
+      changePercent: isNaN(parseFloat(tickerData.change)) || currentPrice === 0 ? 
+        "0.00" : 
+        ((parseFloat(tickerData.change) / (currentPrice - parseFloat(tickerData.change))) * 100).toFixed(2),
       dayHigh,
       dayLow,
       volume,

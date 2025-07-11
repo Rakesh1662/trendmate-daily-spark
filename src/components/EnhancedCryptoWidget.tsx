@@ -119,8 +119,8 @@ const EnhancedCryptoWidget = () => {
                 <span className="text-2xl font-bold">
                   ${cryptoData.price?.toLocaleString() || '0'}
                 </span>
-                <div className={`text-sm ${parseFloat(cryptoData.changePercent || '0') >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  {parseFloat(cryptoData.changePercent || '0') >= 0 ? '+' : ''}{cryptoData.changePercent || '0'}%
+                <div className={`text-sm ${(cryptoData.changePercent && parseFloat(cryptoData.changePercent) >= 0) ? 'text-green-500' : 'text-red-500'}`}>
+                  {(cryptoData.changePercent && parseFloat(cryptoData.changePercent) >= 0) ? '+' : ''}{cryptoData.changePercent || '0'}%
                 </div>
               </div>
             </div>
