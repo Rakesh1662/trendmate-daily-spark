@@ -73,7 +73,7 @@ const EnhancedCryptoWidget = () => {
   };
 
   return (
-    <Card className="h-96">
+    <Card className="h-fit max-h-96 overflow-y-auto">{/* Fixed overflow issue */}
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">
           <Zap className="w-5 h-5 text-primary" />
